@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EPYTODO ROBOTIC CHECKLIST</title>
+  
+  <!-- Bootstrap & Animations -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <!-- Police robotique -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet"/>
+
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background-image: url('future.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      margin: 0;
+      padding: 20px;
+      color: #0ff;
+    }
+
+    .container {
+      background-color: rgba(10, 10, 10, 0.85);
+      padding: 30px;
+      border-radius: 30px;
+      box-shadow: 0 0 25px #0ff;
+      max-width: 800px;
+      margin: auto;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -150%);
+      animation: slideToCenter 1.5s ease-out forwards; 
+    }
+
+    @keyframes slideToCenter {
+      0% {
+        transform: translate(-50%, -150%);
+        opacity: 0;
+      }
+      100% {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+      }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.8em;
+      color: #0ff;
+      text-shadow: 0 0 10px #0ff;
+      margin-bottom: 25px;
+      animation: glitch 1s infinite;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 2px 0 red, -2px 0 blue; }
+      50% { text-shadow: -2px 0 red, 2px 0 blue; }
+      100% { text-shadow: 2px 0 red, -2px 0 blue; }
+    }
+
+    .member-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .member-buttons button {
+      font-size: 1.2em;
+      padding: 15px 25px;
+      background: #111;
+      color: #0ff;
+      border: 2px solid #0ff;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px #0ff;
+      transform-origin: center;
+    }
+
+    .member-buttons button:hover {
+      background: #0ff;
+      color: #000;
+      transform: scale(1.1) rotate(3deg);
+      box-shadow: 0 0 25px #0ff;
+    }
+
+    .tasks-container {
+      display: none;
+    }
+
+    .checklist ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+    }
+
+    .checklist input[type="checkbox"] {
+      transform: scale(1.5);
+      margin-right: 15px;
+    }
+
+    .completed {
+      text-decoration: line-through;
+      color: #ccc;
+    }
+
+    .back-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: transparent;
+      border: 2px solid #0ff;
+      color: #0ff;
+      font-size: 1.2em;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #0ff;
+      color: #000;
+      box-shadow: 0 0 20px #0ff;
+    }
+
+    .task-count {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.1em;
+      color: #0ff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🤖 ALWAYS CHECKLIST 🤖</h1>
+
+    <div class="member-buttons">
+      <button id="jean-victor-btn">Jean-Victor</button>
+      <button id="emmanuel-btn">Emmanuel</button>
+      <button id="christopher-btn">Christopher</button>
+    </div>
+
+    <div class="tasks-container" id="tasks-container">
+      <div class="checklist" id="tasks-list"></div>
+      <div class="task-count" id="task-count">0/0 Tâches Terminées</div>
+      <button class="back-button" id="back-button">Retour</button>
+    </div>
+  </div>
+
+  <audio id="robot-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
+  <script>
+    const sound = document.getElementById("robot-sound");
+
+    const tasks = {
+      'jean-victor': [
+        "Générer le .env et le remplir;",
+        "Gérer le lancement du site-web avec le fichier index.js;",
+        "Gérer tout ce qu'il y a à faire sur les todos;",
+        "Gérer aussi le user.query;"
+      ],
+      'emmanuel': [
+        "Configurer la database avec le fichier db.js;",
+        "Configurer toutes les authentifications indispensables du middleware;",
+        "Configurer toutes les authentifications des routes;",
+        "Gérer aussi le user.query;"
+      ],
+      'christopher': [
+        "Créer `src/index.js` pour Express",
+        "Configurer MySQL dans `src/config/db.js`",
+        "Créer routes : `/register`, `/login`, `/user` etc.",
+        "Protéger les routes avec JWT"
+      ]
+    };
+
+    function showTasks(member) {
+      document.querySelector('.member-buttons').style.display = 'none';
+      document.getElementById('tasks-container').style.display = 'block';
+      const tasksList = document.getElementById('tasks-list');
+      tasksList.innerHTML = '';
+
+      tasks[member].forEach((task, i) => {
+        const li = document.createElement('li');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `${member}-task-${i}`;
+        checkbox.checked = localStorage.getItem(checkbox.id) === 'true';
+
+        const label = document.createElement('label');
+        label.setAttribute('for', checkbox.id);
+        label.textContent = task;
+
+        if (checkbox.checked) label.classList.add('completed');
+
+        checkbox.addEventListener('change', () => {
+          localStorage.setItem(checkbox.id, checkbox.checked);
+          updateTaskCount();
+          if (checkbox.checked) sound.play();
+        });
+
+        li.appendChild(checkbox);
+        li.appendChild(label);
+        tasksList.appendChild(li);
+      });
+
+      updateTaskCount();
+    }
+
+    function updateTaskCount() {
+      const all = document.querySelectorAll('.task-checkbox, .checklist input[type="checkbox"]');
+      const done = [...all].filter(cb => cb.checked).length;
+      document.getElementById('task-count').textContent = `${done}/${all.length} Tâches Terminées`;
+      all.forEach(cb => {
+        cb.nextSibling.classList.toggle('completed', cb.checked);
+      });
+    }
+
+    ['jean-victor', 'emmanuel', 'christopher'].forEach(member => {
+      document.getElementById(`${member}-btn`).addEventListener('click', () => {
+        sound.play();
+        showTasks(member);
+      });
+    });
+
+    document.getElementById('back-button').addEventListener('click', () => {
+      document.querySelector('.member-buttons').style.display = 'flex';
+      document.getElementById('tasks-container').style.display = 'none';
+      sound.play();
+    });
+  </script>
+</body>
+</html>
